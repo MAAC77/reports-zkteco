@@ -277,7 +277,7 @@ export default function Dashboard() {
               <Button
                 type="submit"
                 mt="6"
-                colorScheme="pink"
+                colorScheme="yellow.500"
                 size="lg"
                 isLoading={formState.isSubmitting}
               >

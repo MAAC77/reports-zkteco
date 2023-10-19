@@ -5,8 +5,8 @@ import { api } from "../services/api";
 
 import { jwtPayload } from "../utils/jwtPayload";
 
-type SignInCredentials = {
-  email: string;
+export type SignInCredentials = {
+  usuario: string;
   password: string;
 };
 
@@ -77,10 +77,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
-  async function signIn({ email, password }: SignInCredentials) {
+  async function signIn({ usuario, password }: SignInCredentials) {
     try {
       const response = await api.post("/auth/login", {
-        usuario: email,
+        usuario,
         password,
       });
 
@@ -97,10 +97,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         Router.push("/dashboard");
       }
     } catch (error: any) {
-      if (error.response.status === 401) {
+      if (error.response.status === 403) {
         toast({
           title: "Authentication error.",
-          description: "Incorrect email or password.",
+          description: "Usuario o password incorrecto.",
           status: "error",
           duration: 9000,
           isClosable: true,

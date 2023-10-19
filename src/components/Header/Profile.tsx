@@ -44,12 +44,12 @@ export function Profile({ showProfileData }: ProfileProps) {
           </Box>
         </MenuButton>
 
-        <MenuList bgColor="pink.900">
+        <MenuList bgColor="yellow.900">
           <MenuGroup title="Profile">
             <MenuItem
               icon={<RiAccountCircleFill />}
               _focus={{
-                backgroundColor: "pink.700",
+                backgroundColor: "yellow.700",
               }}
             >
               {user.name}
@@ -60,7 +60,7 @@ export function Profile({ showProfileData }: ProfileProps) {
             onClick={signOut}
             icon={<RiLogoutBoxRLine />}
             _focus={{
-              backgroundColor: "pink.700",
+              backgroundColor: "yellow.700",
             }}
           >
             Logout

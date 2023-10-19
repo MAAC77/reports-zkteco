@@ -12,12 +12,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { Input } from "../components/Form/Input";
 import { Logo } from "../components/Header/Logo";
-import { AuthContext } from "../context/AuthContext";
-
-type SignInFormData = {
-  email: string;
-  password: string;
-};
+import { AuthContext, SignInCredentials } from "../context/AuthContext";
 
 const signInFormSchema = yup.object().shape({
   email: yup.string(),
@@ -27,12 +22,12 @@ const signInFormSchema = yup.object().shape({
 export default function SignIn() {
   const { signIn } = useContext(AuthContext);
 
-  const { register, handleSubmit, formState } = useForm<SignInFormData>({
-    resolver: yupResolver(signInFormSchema),
+  const { register, handleSubmit, formState } = useForm<SignInCredentials>({
+    resolver: yupResolver(signInFormSchema),  
   });
   const errors = formState.errors;
 
-  const handleSignIn: SubmitHandler<SignInFormData> = async (values) => {
+  const handleSignIn: SubmitHandler<SignInCredentials> = async (values) => {
     await signIn(values);
   };
 
@@ -59,11 +54,11 @@ export default function SignIn() {
         >
           <Stack spacing="4">
             <Input
-              {...register("email")}
+              {...register("usuario")}
               type="text"
-              name="email"
-              label="E-mail"
-              error={errors.email}
+              name="usuario"
+              label="Usuario"
+              error={errors.usuario}
             />
             <Input
               {...register("password")}
@@ -77,21 +72,21 @@ export default function SignIn() {
           <Button
             type="submit"
             mt="6"
-            colorScheme="pink"
+            colorScheme="yellow.500"
             size="lg"
             isLoading={formState.isSubmitting}
           >
             Login
           </Button>
 
-          <Text fontSize="sm" mt="4" textAlign="center">
+          {/* <Text fontSize="sm" mt="4" textAlign="center">
             Don&apos;t have an account?{" "}
             <Link href="/signup">
               <ChakraLink fontWeight="bold" display="inline-block">
                 Register Now
               </ChakraLink>
             </Link>
-          </Text>
+          </Text> */}
         </Flex>
       </Stack>
     </Flex>

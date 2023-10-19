@@ -6,9 +6,8 @@ export function Logo() {
       fontSize={["2xl", "3xl"]}
       fontWeight="bold"
       letterSpacing="tight"
-      w="64"
     >
-      Reportes
+      Reporte de Asistencia
     </Text>
   );
 }

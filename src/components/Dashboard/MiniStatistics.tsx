@@ -37,7 +37,7 @@ const MiniStatistics = ({
           {label}
         </StatLabel>
         <Flex>
-          <StatNumber fontSize="lg" color="pink.500">
+          <StatNumber fontSize="lg" color="yellow.500">
             {amount}
           </StatNumber>
           <StatHelpText
@@ -59,7 +59,7 @@ const MiniStatistics = ({
         borderRadius={"12px"}
         h={"45px"}
         w={"45px"}
-        bg="pink.500"
+        bg="yellow.500"
         fontSize={24}
       >
         {icon}
