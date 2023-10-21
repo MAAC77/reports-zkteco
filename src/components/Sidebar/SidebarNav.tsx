@@ -13,7 +13,7 @@ type Category = {
 };
 
 export function SidebarNav() {
-  const { data, isLoading } = useCategories();
+  // const { data, isLoading } = useCategories();
 
   return (
     <Stack spacing="12" align="flex-start">
