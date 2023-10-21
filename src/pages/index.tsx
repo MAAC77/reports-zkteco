@@ -57,14 +57,12 @@ export default function SignIn() {
               {...register("usuario")}
               type="text"
               name="usuario"
-              value="4011283"
               label="Usuario"
               error={errors.usuario}
             />
             <Input
               {...register("password")}
               type="password"
-              value="4011283"
               name="password"
               label="Password"
               error={errors.password}
