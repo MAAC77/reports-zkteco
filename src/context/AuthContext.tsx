@@ -83,11 +83,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         usuario,
         password,
       });
-
+      console.log(response);
       if (response.status === 200) {
         const { token } = response.data;
 
         if (typeof window !== "undefined") {
+          console.log("SET TOKEN ", token);
           localStorage.setItem("@Expenseless:token", token);
         }
 

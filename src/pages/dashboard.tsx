@@ -16,13 +16,22 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Table,
+  TableCaption,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Tfoot,
+  Th,
+  Thead,
+  Tr,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
-import { FormEvent, useCallback, useRef } from "react";
+import { FormEvent, useCallback, useEffect, useRef } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
   RiAddFill,
@@ -31,7 +40,7 @@ import {
   RiRestTimeLine,
   RiShoppingCartLine,
   RiWallet3Line,
-  RiTimeFill
+  RiTimeFill,
 } from "react-icons/ri";
 import * as yup from "yup";
 
@@ -50,89 +59,40 @@ import {
 import { queryClient } from "../services/queryClient";
 import { MotionGrid } from "../styles/animations";
 import { currency } from "../utils/mask";
+import { api } from "../services/api";
+import { Registro, useRegistros } from "../services/hooks/useRegistros";
 
-type newTransactionFormData = {
-  name: string;
-  description: string;
-  amount: string;
-  type: string;
-  categoryId: number;
+const getData = (fecha: string, data: Registro[]) => {
+  const entradaMañana = data.find(
+    (item) => item.periodo === "Mañana" && item.tipo === "ENTRADA"
+  );
+  const salidaMañana = data.find(
+    (item) => item.periodo === "Mañana" && item.tipo === "SALIDA"
+  );
+  const entradaTarde = data.find(
+    (item) => item.periodo === "Tarde" && item.tipo === "ENTRADA"
+  );
+  const salidaTarde = data.find(
+    (item) => item.periodo === "Tarde" && item.tipo === "SALIDA"
+  );
+  console.log(entradaMañana);
+  return (
+    <Tr>
+      <Td>{fecha}</Td>
+      <Td>{entradaMañana?.hora ?? ""}</Td>
+      <Td>{entradaMañana?.diferencia ?? ""}</Td>
+      <Td>{salidaMañana?.hora ?? ""}</Td>
+      <Td>{salidaMañana?.diferencia ?? ""}</Td>
+      <Td>{entradaTarde?.hora ?? ""}</Td>
+      <Td>{entradaTarde?.diferencia ?? ""}</Td>
+      <Td>{salidaTarde?.hora ?? ""}</Td>
+      <Td>{salidaTarde?.diferencia ?? ""}</Td>
+    </Tr>
+  );
 };
 
-const newTransactionFormSchema = yup.object().shape({
-  type: yup.string().required("Type required"),
-  amount: yup.string().typeError("Value is required"),
-  description: yup.string().required("Description required"),
-  name: yup.string().required("Name of transaction required"),
-  categoryId: yup.number().required("Category required"),
-});
-
 export default function Dashboard() {
-  const { data } = useTransactions();
-  const { data: categories } = useCategories();
-  const toast = useToast();
-
-  const initialRefModal = useRef(null);
-  const finalRefModal = useRef(null);
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const { register, handleSubmit, formState, reset } =
-    useForm<newTransactionFormData>({
-      resolver: yupResolver(newTransactionFormSchema),
-    });
-  const errors = formState.errors;
-
-  const handleCloseModal = useCallback(() => {
-    onClose();
-    reset();
-  }, [onClose, reset]);
-
-  const handleKeyUp = useCallback((e: FormEvent<HTMLInputElement>) => {
-    currency(e);
-  }, []);
-
-  const createTransactionMutation = useMutation(createTransaction, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["transactions"]);
-    },
-  });
-
-  const handleNewTransaction: SubmitHandler<newTransactionFormData> = async (
-    values
-  ) => {
-    let amountNumber = Number(values.amount.replace(",", "").replace(".", ""));
-    amountNumber = amountNumber < 100 ? amountNumber * 100 : amountNumber;
-    let type = values.type === "true" ? "expense" : "income";
-
-    const data = {
-      ...values,
-      amount: amountNumber,
-      type,
-    };
-
-    const response = await createTransactionMutation.mutateAsync(data);
-
-    if (response?.status === 201) {
-      toast({
-        title: `Transaction ${data.name} created`,
-        description: "Your transaction has been created",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-      reset();
-      onClose();
-    } else {
-      toast({
-        title: `Error ${response?.status}`,
-        description: `${response?.data.map((error: string) => error)}`,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
+  const { data, isLoading } = useRegistros();
 
   return (
     <Flex direction="column" h="100vh">
@@ -155,19 +115,6 @@ export default function Dashboard() {
             <Text fontSize="4xl" fontWeight="bold">
               Resumen
             </Text>
-
-            {/* <Icon
-              as={RiAddFill}
-              fontSize="4xl"
-              ml="2"
-              bg="pink.500"
-              rounded="full"
-              onClick={onOpen}
-              _hover={{
-                cursor: "pointer",
-                bg: "pink.600",
-              }}
-            /> */}
           </Flex>
 
           <MotionGrid
@@ -180,115 +127,47 @@ export default function Dashboard() {
           >
             <MiniStatistics
               label="Atrasos este Mes"
-              amount={`12 min`}
-              icon={<RiTimeFill  />}
+              amount={data?.minAtraso}
+              icon={<RiTimeFill />}
               animationDelay={1}
             />
             <MiniStatistics
               label="Restantes de tolerancia este mes"
-              amount={`18 min`}
-              icon={<RiTimeFill  />}
+              amount={`0 min`}
+              icon={<RiTimeFill />}
               animationDelay={2}
             />
             <MiniStatistics
               label="Licencias"
               amount={`0`}
-              icon={<RiTimeFill  />}
+              icon={<RiTimeFill />}
               animationDelay={3}
             />
           </MotionGrid>
-          {/* <SimpleGrid w="100%" columns={{ sm: 1, md: 4 }} spacing="24px" my="5">
-            <GridItem colSpan={3}>
-              <Transactions />
-            </GridItem>
-            <GridItem colSpan={1}>
-              <TransactionsOverview title="Monthly Overview" key={2} />
-            </GridItem>
-          </SimpleGrid> */}
+          <TableContainer>
+            <Table variant="simple">
+              <TableCaption>Reporte</TableCaption>
+              <Thead>
+                <Tr>
+                  <Th>FECHA</Th>
+                  <Th>ENTRADA MAÑANA</Th>
+                  <Th>RETRASO</Th>
+                  <Th>SALIDA MAÑANA</Th>
+                  <Th>RETRASO</Th>
+                  <Th>ENTRADA TARDE</Th>
+                  <Th>RETRASO</Th>
+                  <Th>SALIDA TARDE</Th>
+                  <Th>RETRASO</Th>
+                </Tr>
+              </Thead>
+              {data &&
+                Object.entries(data.registros).map(([fecha, item]) => {
+                  return getData(fecha, item);
+                })}
+            </Table>
+          </TableContainer>
         </Flex>
       </Flex>
-
-      <Modal
-        isOpen={isOpen}
-        onClose={handleCloseModal}
-        blockScrollOnMount
-        initialFocusRef={initialRefModal}
-        finalFocusRef={finalRefModal}
-      >
-        <ModalOverlay />
-        <ModalContent bg="green.500">
-          <ModalHeader>Register new transaction</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Flex
-              as="form"
-              w="100%"
-              flexDir="column"
-              onSubmit={handleSubmit(handleNewTransaction)}
-            >
-              <Stack spacing="4">
-                <Input
-                  {...register("name")}
-                  name="name"
-                  label="Name"
-                  type="text"
-                  error={errors.name}
-                />
-                <Input
-                  {...register("description")}
-                  name="description"
-                  label="Description"
-                  type="text"
-                  error={errors.description}
-                />
-                <Input
-                  {...register("amount")}
-                  name="amount"
-                  label="Value $"
-                  type="string"
-                  error={errors.amount}
-                  onKeyUp={handleKeyUp}
-                />
-
-                <Switch
-                  {...register("type")}
-                  name="type"
-                  label="Expense"
-                  error={errors.type}
-                />
-
-                <Select
-                  {...register("categoryId")}
-                  bgColor="gray.900"
-                  variant="filled"
-                  _hover={{
-                    bgColor: "gray.900",
-                  }}
-                  size="lg"
-                >
-                  {categories?.categories.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </Select>
-              </Stack>
-
-              <Button
-                type="submit"
-                mt="6"
-                colorScheme="yellow.500"
-                size="lg"
-                isLoading={formState.isSubmitting}
-              >
-                Create
-              </Button>
-            </Flex>
-          </ModalBody>
-
-          <ModalFooter></ModalFooter>
-        </ModalContent>
-      </Modal>
     </Flex>
   );
 }
